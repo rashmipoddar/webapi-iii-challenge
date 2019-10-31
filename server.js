@@ -6,6 +6,7 @@ const postRoutes = require('./posts/postRouter');
 const server = express();
 
 server.use(express.json());
+server.use(logger);
 server.use('/api/users', userRoutes);
 
 
@@ -16,7 +17,8 @@ server.get('/', (req, res) => {
 //custom middleware
 
 function logger(req, res, next) {
-
+  console.log(`The time at which ${req.method} request was made to url ${req.originalUrl} is ${new Date().toISOString()}`);
+  next();
 };
 
 module.exports = server;
