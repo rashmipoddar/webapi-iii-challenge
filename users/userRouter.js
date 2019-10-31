@@ -98,9 +98,12 @@ function validateUserId(req, res, next) {
     .then(response => {
       // console.log(response);
       if (response) {
-      // {...req, user : response}
-      req.user = response;
-      next();
+        // req = {...req, user : response}
+        // console.log(req);
+        // console.log(req.user);
+        // console.log(req.user.id);
+        req.user = response;
+        next();
       } else {
         res.status(404).send({message: 'Invalid user id'});
       }
