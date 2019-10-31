@@ -1,6 +1,7 @@
 const express = require('express');
 
 const db = require('./userDb');
+const postDb = require('../posts/postDb');
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ router.post('/', validateUser, (req, res) => {
   const newUser = req.body;
   db.insert(newUser)
     .then(response => {
-      console.log(response);
+      // console.log(response);
       res.status(201).send(response);
     })
     .catch(error => {
@@ -17,8 +18,16 @@ router.post('/', validateUser, (req, res) => {
     })
 });
 
-router.post('/:id/posts', (req, res) => {
-
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+  postDb.insert({...req.body, user_id: req.user.id})
+    .then(response => {
+      // console.log(response);
+      res.status(201).send(response);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).send({message: 'There was an error in creating the post. Please try again'});
+    })
 });
 
 router.get('/', (req, res) => {
@@ -38,14 +47,22 @@ router.get('/:id', validateUserId, (req, res) => {
   res.status(200).send(req.user);
 });
 
-router.get('/:id/posts', (req, res) => {
-
+router.get('/:id/posts', validateUserId, (req, res) => {
+  db.getUserPosts(req.user.id)
+    .then(response => {
+      // console.log(response);
+      res.status(200).send(response);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).send({error: 'The user posts could not retrieved from the database'});
+    })
 });
 
 router.delete('/:id', validateUserId, (req, res) => {
   db.remove(req.user.id)
     .then(response => {
-      console.log(response);
+      // console.log(response);
       res.status(200).send(req.user);
     })
     .catch(error => {
@@ -61,7 +78,7 @@ router.put('/:id', validateUserId, (req, res) => {
   } else {
     db.update(req.user.id, updateUserData)
       .then(response => {
-        console.log(response);
+        // console.log(response);
         res.status(200).send(updateUserData);
       })
       .catch(error => {
@@ -105,7 +122,14 @@ function validateUser(req, res, next) {
 };
 
 function validatePost(req, res, next) {
-
+  // console.log(req.user);
+  if (Object.keys(req.body).length === 0) {
+    res.status(400).send({message: 'Missing post data'});
+  } else if (!req.body.text) {
+    res.status(400).send({message: 'Missing required text field'});
+  } else {
+    next();
+  }
 };
 
 module.exports = router;
