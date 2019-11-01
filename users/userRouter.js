@@ -102,6 +102,7 @@ function validateUserId(req, res, next) {
         // console.log(req);
         // console.log(req.user);
         // console.log(req.user.id);
+        // cannot use line 101 because it is creating a new req object and the reference of the original req object is lost.
         req.user = response;
         next();
       } else {
